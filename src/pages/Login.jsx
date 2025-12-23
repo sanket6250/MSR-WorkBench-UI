@@ -46,7 +46,7 @@ const Login = () =>
                  if(response.status == 200)
                 {
                     // Save token manually
-                    localStorage.setItem("jwt", res.data.token);
+                    localStorage.setItem("jwt", res.data.jwtToken);
                     setIsLoggedIn(true);
                     getUserData();
                     navigate("/");
