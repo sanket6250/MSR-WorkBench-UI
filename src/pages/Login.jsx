@@ -45,6 +45,8 @@ const Login = () =>
                  const response = await axios.post(`${backendURL}/login` , {email , password} ,{  withCredentials: true, validateStatus: () => true });
                  if(response.status == 200)
                 {
+                    // Save token manually
+                    localStorage.setItem("jwt", res.data.token);
                     setIsLoggedIn(true);
                     getUserData();
                     navigate("/");

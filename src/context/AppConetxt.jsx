@@ -15,7 +15,8 @@ export const AppContextProvider = (props)=>
     {
         try{
                 //Profile Details API
-                 const response = await axios.get(`${backendURL}/profile` , {  withCredentials: true, validateStatus: () => true });
+                 const response = await axios.get(`${backendURL}/profile` , {  withCredentials: true, validateStatus: () => true ,
+                                               headers: token ? { Authorization: `Bearer ${token}` } : {}});
                  if(response.status == 200)
                 {
                     setUserData(response.data);
