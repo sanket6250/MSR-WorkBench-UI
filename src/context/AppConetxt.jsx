@@ -16,7 +16,7 @@ export const AppContextProvider = (props)=>
         try{
                 //Profile Details API
                  const response = await axios.get(`${backendURL}/profile` , {  withCredentials: true, validateStatus: () => true ,
-                                               headers: token ? {   Authorization: `Bearer ${localStorage.getItem("jwt")}` } : {}});
+                                               headers: localStorage.getItem("jwt") ? {   Authorization: `Bearer ${localStorage.getItem("jwt")}` } : {}});
                  if(response.status == 200)
                 {
                     setUserData(response.data);
