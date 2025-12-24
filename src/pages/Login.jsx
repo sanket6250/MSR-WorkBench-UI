@@ -46,7 +46,7 @@ const Login = () =>
                  if(response.status == 200)
                 {
                     // Save token manually
-                    console.log(response.data);
+                   // console.log(response.data);
                     localStorage.setItem("jwt", response.data.jwtToken);
                     setIsLoggedIn(true);
                     getUserData();
