@@ -29,6 +29,7 @@ const Login = () =>
             {
                 //Register User
                const response = await axios.post(`${backendURL}/register` , {name , email , password});
+                debugger;
                if(response.status == 200)
                {
                   navigate("/");
@@ -43,7 +44,8 @@ const Login = () =>
             {
                 //Login API
                  const response = await axios.post(`${backendURL}/login` , {email , password} ,{  withCredentials: true, validateStatus: () => true });
-                 if(response.status == 200)
+                 debugger; 
+                if(response.status == 200)
                 {
                     // Save token manually
                    // console.log(response.data);
