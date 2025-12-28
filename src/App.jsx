@@ -8,6 +8,9 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import EmailVerify from "./pages/EmailVerify";
 import ResetPassword from "./pages/ResetPassword";
+import Workbench from './components/workbench/workbench';
+import SQLBuilder from './components/workbench/sql/ui/SQLBuilder';
+import CreateSQLTable from './components/workbench/sql/ui/CreateSQLTable';
 
 
 const App = ()=>{
@@ -19,6 +22,9 @@ const App = ()=>{
       <Route path="/login" element={<Login />} />
       <Route path="/email-verify" element={<EmailVerify />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/workbench" element={<Workbench/>} />
+      <Route path="/workbench/sqlBuilder" element={<SQLBuilder/>} />
+      <Route path="/workbench/sql/CreateSQLTable" element={<CreateSQLTable/>} />
     </Routes>
   </div>
 

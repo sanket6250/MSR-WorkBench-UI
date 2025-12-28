@@ -1,34 +1,96 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {assets} from '../assets/assets'
 import { useNavigate } from "react-router-dom";
 import { AppContext } from '../context/AppConetxt';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
-const Header = () =>
+
+const Header = ()=>
 {
-    const {userData} = useContext(AppContext);
+    const navigate = useNavigate();
+    const {userData , backendURL , setUserData , setIsLoggedIn} = useContext(AppContext);
+    const[dropdownOpen , setDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    useEffect( ()=>
+    {
+        const handleClickOutSide = (event) =>
+        {
+            if(dropdownRef.current && !dropdownRef.current.contains(event.target))
+            {
+                setDropdownOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown" , handleClickOutSide);
+        return ()=> document.removeEventListener("mousedown" , handleClickOutSide);
+    } , []);
+
+    const handeLogOut = async () =>
+    {
+        try{
+            axios.defaults.withCredentials = true;
+            const response =  await axios.post(backendURL + '/logout');
+            if(response.status == 200)
+            {
+                setUserData(false);
+                setIsLoggedIn(false);
+                navigate("/");
+                toast.error("Logged out successfully!");
+            }
+            else
+            {
+                 toast.error("Error occcured while logging out.");
+            }
+        }
+        catch(error)
+        {
+            toast.error(error);
+        }
+    }
 
     return (
 
-        <div className="text-center d-flex flex-column align-items-center justify-content-center py-5 px-3" style={{minHeight:'80vh'}}>
+        <nav className="navbar bg-white px-5 py-4 d-flex justify-content-between align-items-center" style={{height:'88px'}} >
 
-            <img src={assets.logo_home} alt="Header" width={120} className='mb-4' />
+            <div className="d-flex align-items-center gap-2 ">
+                <a href='/' style={{display: 'flex' , gap: '5px' , textDecoration: 'none'}}>
+                    <img src={assets.logo} alt="logo" width={32} height={32}/>
+                    <span className="fw-bold fs-4 text-dark">MSR Workbench</span>
+                </a>
+            </div>
 
-            <h5 className="fw-semibold">
-                Hey {userData ? userData.name : 'User'} <span role="img" aria-label='wave' className="">👋</span>
-            </h5>
+            {userData ? (
+                    <div className="position-relative" ref={dropdownRef}>
+                        <div className='bg-dark text-white rounded-circle d-flex justify-content-center align-items-center' 
+                                style={{width:'40px' , height:'40px',cursor:'pointer',userSelect:'none'}} onClick={() => setDropdownOpen((prev) => !prev)}>
+                            {userData.name[0].toUpperCase()}
+                        </div>
 
-            <h1 className="fw-bold display-5 mb-3">Welcome to our workbench</h1>
+                    {dropdownOpen &&(
+                        <div className="position-absolute shadow bg-white p-2" style={{top:'50px' , right:'25px',zIndex:100}}>
+                            {!userData.isAccountVerified && (
+                                <div className="dropdown-item py-1 px-2" style={{cursor:'pointer'}}>
+                                    Verify Email
+                                </div>
+                            )}   
 
-            <p className="text-muted fs-5 mb-4" style={{maxWidth:'500px'}}>
-                Let's start with a quick trial ! 
-            </p>
+                            <div className="drpdown-item py-1 px-2 text-danger" style={{cursor:'pointer'}} onClick={()=>handeLogOut()} >
+                                Logout <i className='bi bi-arrow-right ms-2'></i>
+                            </div>
 
-            <button className='btn btn-outline-dark rounded-pill px-4 py-2'>
-                Get Started
-            </button>   
+                        </div>
+                    )}
 
-        </div>
+                    </div>
+            ) : (
 
+                <div className="btn btn-outline-dark rounded-pill px-3" onClick={()=>navigate('/login')}>
+                Login <i className="bi bi-arrow-right ms-2"></i>
+            </div>
+            )}
+        </nav>
     )
 }
 
