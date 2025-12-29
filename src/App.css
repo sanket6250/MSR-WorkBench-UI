@@ -1,0 +1,26 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body{
+    background-color: lavender !important;
+}
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* HEADER HEIGHT = 88px */
+/* FOOTER HEIGHT = 60px (adjust if needed) */
+
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
+  min-height: fit-content;
+}

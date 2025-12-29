@@ -52,8 +52,7 @@ const Header = ()=>
 
     return (
 
-        <nav className="navbar bg-white px-5 py-4 d-flex justify-content-between align-items-center" style={{height:'88px'}} >
-
+        <nav className="navbar px-5 py-4 d-flex justify-content-between align-items-center" style={{height:'88px',backgroundColor:'rgb(125 125 125 / 15%)'}} >
             <div className="d-flex align-items-center gap-2 ">
                 <a href='/' style={{display: 'flex' , gap: '5px' , textDecoration: 'none'}}>
                     <img src={assets.logo} alt="logo" width={32} height={32}/>
@@ -79,10 +78,8 @@ const Header = ()=>
                             <div className="drpdown-item py-1 px-2 text-danger" style={{cursor:'pointer'}} onClick={()=>handeLogOut()} >
                                 Logout <i className='bi bi-arrow-right ms-2'></i>
                             </div>
-
                         </div>
                     )}
-
                     </div>
             ) : (
 

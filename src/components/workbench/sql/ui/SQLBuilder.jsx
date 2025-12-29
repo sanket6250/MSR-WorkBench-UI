@@ -51,8 +51,6 @@ export default function SQLBuilder() {
 
   return (
     <>
-      <Header />
-
       <div className="container-fluid px-4 py-4" style={{ maxWidth: 1200 }}>
         {/* HEADER */}
         <div className="mb-4">
@@ -80,7 +78,7 @@ export default function SQLBuilder() {
                     transition: "all 0.2s ease",
                   }}
                 >
-                  <div className="card-body p-4 d-flex flex-column">
+                  <div className="card-body p-4 d-flex flex-column" style={{background: 'bisque'}}>
                     {/* ICON */}
                     <div
                       className="d-flex align-items-center justify-content-center mb-3"

@@ -23,12 +23,7 @@ const Workbench = () =>
     return (
 
     <>
-          <Header />
-
-      
-          <div className="container d-flex flex-column align-items-center justify-content-center text-center px-3" style={{minHeight: '78vh'}}>
-            <img src="/src/assets/logo_home.png" alt="MSR Workbench" width="90" className="mb-3" />
-
+          <div className="container d-flex flex-column align-items-center justify-content-center text-center px-3" style={{minHeight: '-webkit-fill-available'}}>
             <h6 className="fw-semibold mb-2">
                 Hey {userData ? userData.name : 'User'} <span role="img" aria-label='wave' className="">👋</span>
             </h6>
@@ -36,8 +31,8 @@ const Workbench = () =>
                 Build, manage, and deploy decentralized organizations faster.
             </p>
 
-            <div className="w-100 d-flex align-items-start gap-3" style={{maxWidth: '720px'}}>
-                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 shadow-sm w-100" style={{minHeight: '120px'}}>
+            <div className="w-100 d-flex align-items-start gap-3">
+                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 shadow-sm w-100" style={{minHeight: '120px',background: 'radial-gradient(rgb(176 205 249), transparent)'}}>
                     <div
                         className="d-flex align-items-center justify-content-center flex-shrink-0"
                         style={{width: '42px',height: '42px',borderRadius: '50%',background: 'rgba(0, 0, 0, 0.06)'}}>
@@ -51,12 +46,17 @@ const Workbench = () =>
                         </div>
                     </div>
 
-                    <button className="btn btn-dark btn-sm rounded-pill ms-auto px-3" onClick={()=>{startJob('SQL')}}>
+                    <button className="btn btn-dark btn-sm rounded-pill ms-auto px-3" onClick={()=>{startJob('SQL')}} style={{background:'#0053a5'}}>
+                        <style>{`   .btn:hover {
+                                    color: var(--bs-btn-hover-color);
+                                    background-color: var(--bs-btn-hover-bg) !important;
+                                    border-color: var(--bs-btn-hover-border-color);}`}
+                        </style>
                         Start
                     </button>
                 </div>
 
-                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 w-100 text-muted" style={{minHeight: '120px'}}>
+                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 w-100 text-muted" style={{minHeight: '120px',background: 'radial-gradient(rgb(176 205 249), transparent)'}}>
                     <div
                         className="d-flex align-items-center justify-content-center flex-shrink-0"
                         style={{width: '42px',height: '42px',borderRadius: '50%',background: 'rgba(0, 0, 0, 0.04)'}}>
@@ -72,11 +72,9 @@ const Workbench = () =>
 
                     <span className="ms-auto small fst-italic">Coming soon</span>
                 </div>
+                
             </div>
-        </div>
-
-        <Footer/>
-        
+        </div>        
     </>
 
     )

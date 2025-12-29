@@ -4,13 +4,14 @@ const Footer = ()=>
     const [openChat, setOpenChat] = useState(false);
     return(
         <>
+        <div style={{width: '100%',bottom: '0'}}>
         <hr style={{margin:'5px' ,  opacity: '0.10'}} />
      
         {/* CHATBOT FLOATING ICON */}
       <div
         onClick={() => setOpenChat(true)}
         style={{
-          position: "fixed",
+          //position: "fixed",
           //bottom: 24,
           right: 24,
           width: 50,
@@ -25,6 +26,8 @@ const Footer = ()=>
           boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
           zIndex: 1000,
           transition: "transform 0.2s ease",
+          float: 'inline-end',
+          position: 'relative',
         }}
         onMouseEnter={(e) =>
           (e.currentTarget.style.transform = "scale(1.08)")
@@ -79,12 +82,7 @@ const Footer = ()=>
             👋 Hi! I’m your MSR Assistant.  
             <br />
             <br />
-            Ask me about:
-            <ul>
-              <li>DAO Builder</li>
-              <li>SQL Utilities</li>
-              <li>Workbench features</li>
-            </ul>
+            <div style={{alignItems: 'center', position: 'relative',display: 'flex',justifyContent: 'center',height: '100%'}}>Ask me anything</div>
           </div>
 
           {/* INPUT */}
@@ -96,6 +94,7 @@ const Footer = ()=>
           </div>
         </div>
       )}
+      </div>
         </>
     );
 }

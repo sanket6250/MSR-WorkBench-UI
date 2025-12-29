@@ -99,7 +99,6 @@ const updateColumn = (index, field, value) => {
 
 return ( 
       <>
-          <Header />
         <div className="container-fluid px-4 py-4" style={{ maxWidth: 1150 }}>
       {/* HEADER */}
       <div className="mb-4">

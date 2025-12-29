@@ -74,7 +74,6 @@ const Login = () =>
 
     return (
         <>
-            <Header />
         <div className="auth-bg d-flex justify-content-center align-items-center">
             <div className="auth-overlay" />
             <div className="auth-card">
@@ -278,8 +277,6 @@ const Login = () =>
                 `}
             </style>
             </div>
-
-
         </>
     )
 }
