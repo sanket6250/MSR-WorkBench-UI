@@ -63,9 +63,9 @@ const Workbench = () =>
                     </div>
 
                     <div className="text-start">
-                        <div className="fw-semibold">Proposal Manager</div>
+                        <div className="fw-semibold">Text Manager</div>
                         <div className="small">
-                            Create, vote, and track proposals.
+                            Translate Or Correct Input Text.
                         </div>
                     </div>
 
