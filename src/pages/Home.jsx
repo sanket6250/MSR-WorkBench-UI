@@ -1,4 +1,4 @@
-import Content from "../components/content.jsx";
+import Content from "../components/Content.jsx";
 import Header from "../components/Header.jsx";
 
 const Home = () =>
