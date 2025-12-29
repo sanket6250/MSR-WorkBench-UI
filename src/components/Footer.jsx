@@ -25,12 +25,12 @@ const Footer = ()=>
           cursor: "pointer",
           boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
           zIndex: 1000,
-          transition: "transform 0.2s ease",
+         // transition: "transform 0.2s ease",
           float: 'inline-end',
           position: 'relative',
         }}
         onMouseEnter={(e) =>
-          (e.currentTarget.style.transform = "scale(1.08)")
+          (e.currentTarget.style.transform = "scale(1.02)")
         }
         onMouseLeave={(e) =>
           (e.currentTarget.style.transform = "scale(1)")
