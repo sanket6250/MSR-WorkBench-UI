@@ -2,6 +2,7 @@ import { useContext } from 'react';
 import { Navigate, useNavigate } from "react-router-dom";
 import { AppContext } from '../../context/AppConetxt';
 import Header from '../Header';
+import Footer from '../Footer';
 
 const Workbench = () =>
 {
@@ -25,7 +26,7 @@ const Workbench = () =>
           <Header />
 
       
-          <div className="container d-flex flex-column align-items-center justify-content-center text-center px-3" style={{minHeight: '75vh'}}>
+          <div className="container d-flex flex-column align-items-center justify-content-center text-center px-3" style={{minHeight: '78vh'}}>
             <img src="/src/assets/logo_home.png" alt="MSR Workbench" width="90" className="mb-3" />
 
             <h6 className="fw-semibold mb-2">
@@ -73,6 +74,9 @@ const Workbench = () =>
                 </div>
             </div>
         </div>
+
+        <Footer/>
+        
     </>
 
     )
