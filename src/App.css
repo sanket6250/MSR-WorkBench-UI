@@ -5,10 +5,6 @@ body,
   margin: 0;
 }
 
-body{
-    background-color: lavender !important;
-}
-
 .app-layout {
   display: flex;
   flex-direction: column;
@@ -22,5 +18,4 @@ body{
   flex: 1;
   overflow-y: auto;
   box-sizing: border-box;
-  min-height: fit-content;
 }

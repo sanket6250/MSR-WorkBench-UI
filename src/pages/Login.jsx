@@ -182,7 +182,7 @@ const Login = () =>
                 /* BACKGROUND */
                 .auth-bg {
                     position: relative;
-                    height: calc(100vh - 88px);
+                    height: -webkit-fill-available;
                     background: linear-gradient(
                     135deg,
                     #0f172a,

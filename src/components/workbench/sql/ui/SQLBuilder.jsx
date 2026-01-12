@@ -78,7 +78,7 @@ export default function SQLBuilder() {
                     transition: "all 0.2s ease",
                   }}
                 >
-                  <div className="card-body p-4 d-flex flex-column" style={{background: 'bisque'}}>
+                  <div className="card-body p-4 d-flex flex-column">
                     {/* ICON */}
                     <div
                       className="d-flex align-items-center justify-content-center mb-3"

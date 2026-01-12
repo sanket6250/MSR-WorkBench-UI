@@ -32,7 +32,7 @@ const Workbench = () =>
             </p>
 
             <div className="w-100 d-flex align-items-start gap-3">
-                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 shadow-sm w-100" style={{minHeight: '120px',background: 'radial-gradient(rgb(176 205 249), transparent)'}}>
+                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 shadow-sm w-100" style={{minHeight: '120px',background: 'white'}}>
                     <div
                         className="d-flex align-items-center justify-content-center flex-shrink-0"
                         style={{width: '42px',height: '42px',borderRadius: '50%',background: 'rgba(0, 0, 0, 0.06)'}}>
@@ -56,7 +56,7 @@ const Workbench = () =>
                     </button>
                 </div>
 
-                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 w-100 text-muted" style={{minHeight: '120px',background: 'radial-gradient(rgb(176 205 249), transparent)'}}>
+                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 w-100 text-muted" style={{minHeight: '120px',background: 'white'}}>
                     <div
                         className="d-flex align-items-center justify-content-center flex-shrink-0"
                         style={{width: '42px',height: '42px',borderRadius: '50%',background: 'rgba(0, 0, 0, 0.04)'}}>
