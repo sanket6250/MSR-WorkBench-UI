@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {validateIdentifier,isSizeRequired,enforceSinglePrimaryKey,} from "../util/sqlValidators";
 import { generateCreateTableSQL } from "../util/sqlGenerator";
 import { DATA_TYPES ,CONSTRAINT_OPTIONS ,DB_LIMITS } from "../util/sqlConstants";
 import Header from "../../../Header";
 import '../css/sqlCSS.css'
 import { toast } from "react-toastify";
+import axios from "axios";
+import { AppContext } from "../../../../context/AppConetxt";
 
 export default function CreateSQLTable() {
   const [dbType, setDbType] = useState("postgres");
@@ -68,8 +70,11 @@ const updateColumn = (index, field, value) => {
       },
     ]);
 
-  const generateSQLScript = ()=>
+  const{backendURL} = useContext(AppContext);
+
+  const generateSQLScript = async ()=>
   {
+    /* Client Side 
       const sql = sqlPreview();
       if (!sql) return toast.error('Please fill required data !');
 
@@ -87,6 +92,38 @@ const updateColumn = (index, field, value) => {
 
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      */
+
+    try{
+          //Profile Details API
+          const response =  await axios.post(`${backendURL}/generateSQL` , {dbType ,tableName , columns} ,{  responseType: "blob", withCredentials: true, validateStatus: () => true });
+          if(response.status == 200)
+          {
+             // Create file blob
+             const blob = new Blob([response.data], { type: "application/zip" });
+             // Create temporary URL
+             const url = window.URL.createObjectURL(blob);
+             // Create anchor and trigger download
+             const link = document.createElement("a");
+             link.href = url;
+             link.download = "GeneratedCode.zip";
+             document.body.appendChild(link);
+             link.click();
+
+             // Cleanup
+             link.remove();
+             window.URL.revokeObjectURL(url);
+          }
+          else
+          {
+              toast.error("Download failed.");
+          }
+        }
+        catch(error)
+        {
+            toast.error("Download failed." , error.message);
+        }
+
   }   
 
   const removeColumn = (i) =>

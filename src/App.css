@@ -18,4 +18,9 @@ body,
   flex: 1;
   overflow-y: auto;
   box-sizing: border-box;
+  background-image: url("./BGImages/bg5.jpg"); /* put image in public/images */
+  background-size: cover;        /* fills screen */
+  background-position: center;   /* center image */
+  background-repeat: no-repeat;  /* no tiling */
+  background-attachment: fixed;  /* stays while scrolling */
 }

@@ -53,7 +53,7 @@ const Login = () =>
                     localStorage.setItem("jwt", response.data.jwtToken);
                     setIsLoggedIn(true);
                     getUserData();
-                    navigate("/workbench");
+                    navigate("/home");
                     toast.success("Logged In successfully.");
                 }
                 else

@@ -1,4 +1,4 @@
-import { createContext, use, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { APP_CONSTANTS } from "../util/constant";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -23,7 +23,7 @@ export const AppContextProvider = (props)=>
                 }
                 else
                 {
-                    toast.error("Unable to fetch user details.");
+                    toast.error((undefined != response?.data?.message) ? response.data.message : "Unable to fetch user details.");
                 }
         }
         catch(error)
@@ -31,6 +31,10 @@ export const AppContextProvider = (props)=>
             toast.error(error.message);
         }
     }
+
+    useEffect(() => {
+        getUserData(); // run once when app loads
+    }, []);
 
     const contextValue = {
         backendURL,

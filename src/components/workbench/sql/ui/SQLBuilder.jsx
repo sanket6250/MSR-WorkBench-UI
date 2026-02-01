@@ -9,19 +9,19 @@ export default function SQLBuilder() {
       title: "Create Table",
       description: "Design and create new database tables visually.",
       icon: "bi-table",
-      path: "/workbench/sql/CreateSQLTable",
+      path: "/home/sql/CreateSQLTable",
     },
     {
       title: "Alter Table",
       description: "Add, modify, or remove columns from existing tables.",
       icon: "bi-pencil-square",
-      path: "/workbench/sql/alter-table",
+      path: "/home/sql/alter-table",
     },
     {
       title: "Drop Table",
       description: "Safely remove tables with confirmation & preview.",
       icon: "bi-trash",
-      path: "/workbench/sql/drop-table",
+      path: "/home/sql/drop-table",
     },
     {
       title: "Indexes",

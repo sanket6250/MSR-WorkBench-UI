@@ -10,7 +10,7 @@ import { AppContextProvider } from './context/AppConetxt.jsx'
 
 createRoot(document.getElementById('root')).render(
 
-  <BrowserRouter>
+  <BrowserRouter basename="/msr-workbench">
       <AppContextProvider>
         <App/>
       </AppContextProvider>

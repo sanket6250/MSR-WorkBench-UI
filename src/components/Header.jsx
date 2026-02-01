@@ -39,6 +39,7 @@ const Header = ()=>
             {
                 setUserData(false);
                 setIsLoggedIn(false);
+                localStorage.removeItem("jwt"); // clear invalid token
                 navigate("/");
                 toast.error("Logged out successfully!");
             }
@@ -55,9 +56,9 @@ const Header = ()=>
 
     return (
 
-        <nav className="navbar px-5 d-flex justify-content-between align-items-center" style={{minHeight: '30px',maxHeight: '72px', backgroundColor:'black'}} >
+        <nav className="navbar px-5 d-flex justify-content-between align-items-center" style={{minHeight: '30px',maxHeight: '72px', backgroundColor:'rgb(3 12 20)'}} >
             <div className="d-flex align-items-center gap-2 ">
-                <a href='/' style={{display: 'flex' , gap: '5px' , textDecoration: 'none'}}>
+                <a href='/msr-workbench' style={{display: 'flex' , gap: '5px' , textDecoration: 'none'}}>
                     <img src={assets.logo} alt="logo" width={32} height={32}/>
                     <span className="fw-bold fs-4 text-white">MSR Workbench</span>
                 </a>

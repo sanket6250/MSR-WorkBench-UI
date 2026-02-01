@@ -14,7 +14,7 @@ const Workbench = () =>
         switch(id)
         {
             case 'SQL':
-                navigate("/workbench/sqlBuilder")
+                navigate("/home/sqlBuilder")
             break;
             default:
         }
@@ -24,13 +24,6 @@ const Workbench = () =>
 
     <>
           <div className="container d-flex flex-column align-items-center justify-content-center text-center px-3" style={{minHeight: '-webkit-fill-available'}}>
-            <h6 className="fw-semibold mb-2">
-                Hey {userData ? userData.name : 'User'} <span role="img" aria-label='wave' className="">👋</span>
-            </h6>
-            <p className="text-muted mb-4" style={{maxWidth: '480px'}}>
-                Build, manage, and deploy decentralized organizations faster.
-            </p>
-
             <div className="w-100 d-flex align-items-start gap-3">
                 <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 shadow-sm w-100" style={{minHeight: '120px',background: 'white'}}>
                     <div

@@ -12,6 +12,7 @@ import SQLBuilder from './components/workbench/sql/ui/SQLBuilder';
 import CreateSQLTable from './components/workbench/sql/ui/CreateSQLTable';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import PrivateRoute from './PrivateRoute';
 
 const App = ()=>{
   const location = useLocation();
@@ -23,6 +24,18 @@ const App = ()=>{
     "/reset-password",
   ];
 
+  const AppLayout = ()=>
+  {
+    return (  <Routes>
+                <Route path="email-verify" element={<EmailVerify />} />
+                <Route path="reset-password" element={<ResetPassword />} />
+                <Route path="home" element={<Workbench/>} />
+                <Route path="home/sqlBuilder" element={<SQLBuilder/>} />
+                <Route path="home/sql/CreateSQLTable" element={<CreateSQLTable/>} />
+            </Routes>  
+            );
+  }; 
+
   const shouldShowFooter = !hideFooterRoutes.includes(location.pathname);
 
   return(
@@ -33,12 +46,19 @@ const App = ()=>{
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/email-verify" element={<EmailVerify />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/workbench" element={<Workbench/>} />
-      <Route path="/workbench/sqlBuilder" element={<SQLBuilder/>} />
-      <Route path="/workbench/sql/CreateSQLTable" element={<CreateSQLTable/>} />
+      
+       {/* PROTECTED */}
+      <Route
+        path="/*"
+        element={
+          <PrivateRoute>
+            <AppLayout />   {/* contains dashboard, sql builder, etc */}
+          </PrivateRoute>
+        }
+      />
+
     </Routes>
+
     </main>
     {shouldShowFooter && <Footer />}
   </div>
