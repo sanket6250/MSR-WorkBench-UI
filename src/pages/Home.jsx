@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppConetxt";
+import {BGImages} from '../assets/BGImages';
 import "../CSS/Home.css";
 
 const Home = () => {
