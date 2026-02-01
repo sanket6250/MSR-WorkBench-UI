@@ -1,7 +1,7 @@
 /* ================= GLOBAL WRAPPER ================= */
 .home-wrapper {
   font-family: "Poppins", sans-serif;
-  background: url("/images/bg-blue.jpg") center/cover no-repeat fixed;
+ /* background: url("/images/bg-blue.jpg") center/cover no-repeat fixed;
 }
 
 /* ================= HERO ================= */

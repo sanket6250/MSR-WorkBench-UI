@@ -13,6 +13,8 @@ import CreateSQLTable from './components/workbench/sql/ui/CreateSQLTable';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import PrivateRoute from './PrivateRoute';
+import bg7 from './assets/BGImages/bg7.jpg';
+
 
 const App = ()=>{
   const location = useLocation();
@@ -42,7 +44,7 @@ const App = ()=>{
   <div className="app-layout">
     <ToastContainer  autoClose={1500} hideProgressBar={false} pauseOnHover={false}/>
     <Header/>
-     <main className="app-content">
+     <main className="app-content" style={{ backgroundImage: `url(${bg7})` }}>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
