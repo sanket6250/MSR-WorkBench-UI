@@ -139,10 +139,7 @@ return (
         <div className="container-fluid px-4 py-4" style={{ maxWidth: 1150 }}>
       {/* HEADER */}
       <div className="mb-4">
-        <h4 className="fw-bold mb-1">Create Table</h4>
-        <p className="text-muted mb-0">
-          Visually design your schema and generate SQL instantly
-        </p>
+        <h4 className="fw-bold mb-1" style={{color: 'white'}}>Create Table</h4>
       </div>
 
       <div

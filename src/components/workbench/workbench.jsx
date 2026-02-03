@@ -1,76 +1,109 @@
-import { useContext } from 'react';
-import { Navigate, useNavigate } from "react-router-dom";
-import { AppContext } from '../../context/AppConetxt';
-import Header from '../Header';
-import Footer from '../Footer';
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AppContext } from "../../context/AppConetxt";
 
-const Workbench = () =>
-{
-    const navigate = useNavigate();
-    const {userData , isLoggedIn} = useContext(AppContext);
+const Workbench = () => {
+  const navigate = useNavigate();
+  const { userData } = useContext(AppContext);
 
-    const startJob = (id)=>
-    {
-        switch(id)
-        {
-            case 'SQL':
-                navigate("/home/sqlBuilder")
-            break;
-            default:
-        }
-    }
+  const tools = [
+    { name: "SQL Builder", icon: "bi-database", path: "/home/sqlBuilder" },
+    { name: "Document Extraction", icon: "bi-file-earmark-text", path: "/home/doc-extract" },
+    { name: "Resume Builder", icon: "bi-person-lines-fill", path: "/home/resume-builder" },
+    { name: "Text Manager", icon: "bi-journal-text", disabled: true },
+  ];
 
-    return (
-
+  return (
     <>
-          <div className="container d-flex flex-column align-items-center justify-content-center text-center px-3" style={{minHeight: '-webkit-fill-available'}}>
-            <div className="w-100 d-flex align-items-start gap-3">
-                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 shadow-sm w-100" style={{minHeight: '120px',background: 'white'}}>
-                    <div
-                        className="d-flex align-items-center justify-content-center flex-shrink-0"
-                        style={{width: '42px',height: '42px',borderRadius: '50%',background: 'rgba(0, 0, 0, 0.06)'}}>
-                        <i className="bi bi-diagram-3 fs-5"></i>
-                    </div>
+    <style>{`.focus-wrap {
+                text-align: center;
+                padding: 80px 10%;
+                }
 
-                    <div className="text-start">
-                        <div className="fw-semibold">SQL Builder</div>
-                        <div className="text-muted small">
-                           Build SQL in minutes.
-                        </div>
-                    </div>
+                /* HERO */
+                .hero h1 {
+                font-size: 38px;
+                font-weight: 600;
+                margin-bottom: 10px;
+                color: #0f172a;
+                }
 
-                    <button className="btn btn-dark btn-sm rounded-pill ms-auto px-3" onClick={()=>{startJob('SQL')}} style={{background:'#0053a5'}}>
-                        <style>{`   .btn:hover {
-                                    color: var(--bs-btn-hover-color);
-                                    background-color: var(--bs-btn-hover-bg) !important;
-                                    border-color: var(--bs-btn-hover-border-color);}`}
-                        </style>
-                        Start
-                    </button>
-                </div>
+                .hero p {
+                color: #64748b;
+                font-size: 18px;
+                margin-bottom: 60px;
+                }
 
-                <div className="d-flex align-items-center gap-3 px-4 py-3 border rounded-3 w-100 text-muted" style={{minHeight: '120px',background: 'white'}}>
-                    <div
-                        className="d-flex align-items-center justify-content-center flex-shrink-0"
-                        style={{width: '42px',height: '42px',borderRadius: '50%',background: 'rgba(0, 0, 0, 0.04)'}}>
-                        <i className="bi bi-journal-text fs-5"></i>
-                    </div>
+                /* GRID */
+                .tool-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 30px;
+                margin-bottom: 60px;
+                }
 
-                    <div className="text-start">
-                        <div className="fw-semibold">Text Manager</div>
-                        <div className="small">
-                            Translate Or Correct Input Text.
-                        </div>
-                    </div>
+                /* CARDS */
+                .tool-card {
+                background: white;
+                padding: 40px 20px;
+                border-radius: 18px;
+                box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+                transition: all 0.25s ease;
+                cursor: pointer;
+                }
 
-                    <span className="ms-auto small fst-italic">Coming soon</span>
-                </div>
-                
-            </div>
-        </div>        
+                .tool-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 18px 45px rgba(0,0,0,0.12);
+                }
+
+                .tool-card i {
+                font-size: 34px;
+                margin-bottom: 16px;
+                color: #0053a5;
+                }
+
+                .tool-card span {
+                display: block;
+                font-weight: 500;
+                font-size: 17px;
+                }
+
+                /* DISABLED */
+                .tool-card.disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+                transform: none !important;
+                }
+
+                /* STATUS LINE */
+                .status-line {
+                font-size: 14px;
+                color: #22c55e;
+                font-weight: 500;
+                }
+            `}</style>
+    <div className="focus-wrap">
+      <div className="tool-grid">
+        {tools.map((tool, i) => (
+          <div
+            key={i}
+            className={`tool-card ${tool.disabled ? "disabled" : ""}`}
+            onClick={() => !tool.disabled && navigate(tool.path)}
+          >
+            <i className={`bi ${tool.icon}`}></i>
+            <span>{tool.name}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="status-line">
+        ⚡ Your AI workspace is ready
+      </div>
+
+    </div>
     </>
-
-    )
-}
+  );
+};
 
 export default Workbench;

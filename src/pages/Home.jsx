@@ -6,7 +6,7 @@ import "../CSS/Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { userData } = useContext(AppContext);
+  const { userData , isLoggedIn } = useContext(AppContext);
 
   return (
     <div className="home-wrapper">
@@ -31,7 +31,7 @@ const Home = () => {
 
           <button
             className="hero-btn"
-            onClick={() => navigate("/login")}
+            onClick={() => navigate(isLoggedIn ? "/home" : "/login")}
           >
             Get Started
           </button>

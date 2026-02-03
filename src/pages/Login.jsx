@@ -52,7 +52,7 @@ const Login = () =>
                    // console.log(response.data);
                     localStorage.setItem("jwt", response.data.jwtToken);
                     setIsLoggedIn(true);
-                    getUserData();
+                    await getUserData();
                     navigate("/home");
                     toast.success("Logged In successfully.");
                 }

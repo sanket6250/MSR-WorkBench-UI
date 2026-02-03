@@ -54,10 +54,7 @@ export default function SQLBuilder() {
       <div className="container-fluid px-4 py-4" style={{ maxWidth: 1200 }}>
         {/* HEADER */}
         <div className="mb-4">
-          <h4 className="fw-bold mb-1">SQL Builder</h4>
-          <p className="text-muted mb-0">
-            Build and manage database structures without writing raw SQL.
-          </p>
+          <h4 className="fw-bold mb-1" style={{color: 'white'}}>SQL Builder</h4>
         </div>
 
         {/* UTILITIES GRID */}
