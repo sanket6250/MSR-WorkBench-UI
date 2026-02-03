@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import {APP_CONSTANTS} from './util/constant'
 import api from "./api";
 
@@ -8,6 +8,10 @@ const PrivateRoute = ({ children }) => {
   const [valid, setValid] = useState(false);
   const location = useLocation();
   const backendURL = APP_CONSTANTS.BACKEND_URL;
+
+  //Will not validate form landing page
+  if(location.pathname == 'msr-workbench' )
+    return children;
 
   useEffect(() => {
     const validate = async () => {
