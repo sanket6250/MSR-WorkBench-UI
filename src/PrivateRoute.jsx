@@ -12,7 +12,11 @@ const PrivateRoute = ({ children }) => {
 
   useEffect(() => {
     const validate = async () => {
-      debugger;
+
+      //Will not validate form landing page
+      if(location.pathname == '/msr-workbench' )
+        return children;
+
       const token = localStorage.getItem("jwt");
 
       if (!token) {
@@ -22,9 +26,6 @@ const PrivateRoute = ({ children }) => {
       }
 
        setLoading(true);
-       //Will not validate form landing page
-      if(location.pathname == '/msr-workbench' )
-        return children;
 
       try {
         await api.get(`${backendURL}/is-authenticated`); // backend endpoint
