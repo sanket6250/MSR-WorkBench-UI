@@ -14,7 +14,7 @@ const PrivateRoute = ({ children }) => {
     const validate = async () => {
 
       //Will not validate form landing page
-      if(location.pathname == '/msr-workbench' )
+      if(location.pathname == 'MSR-WorkBench-UI' )
         return children;
 
       const token = localStorage.getItem("jwt");
