@@ -17,6 +17,8 @@ import BGImage from './assets/BGImages/bg5.jpg';
 import RouteLoader from "./components/RouteLoader";
 import { useContext } from 'react';
 import { AppContext } from './context/AppConetxt';
+import DocBuilder from './components/workbench/document/DocBuilder';
+import BillUpload from './components/workbench/document/BillUpload';
 
 
 const App = ()=>{
@@ -39,6 +41,8 @@ const App = ()=>{
                 <Route path="home" element={<Workbench/>} />
                 <Route path="home/sqlBuilder" element={<SQLBuilder/>} />
                 <Route path="home/sql/CreateSQLTable" element={<CreateSQLTable/>} />
+                <Route path="home/doc-extract" element={<DocBuilder/>} />
+                <Route path="home/doc-extract/bill-extract" element={<BillUpload/>} />
             </Routes>  
             );
   }; 

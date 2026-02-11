@@ -12,7 +12,7 @@ export const AppContextProvider = (props)=>
     const [userData , setUserData] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const getUserData = async ()=>
+    const getUserData = async (force)=>
     {
         try{
                 // If already loaded and not forcing refresh, use cache

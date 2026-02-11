@@ -17,6 +17,7 @@ const PrivateRoute = ({ children }) => {
 
       if (!token) {
         setLoading(false);
+        setValid(false);
         return;
       }
 
@@ -41,10 +42,7 @@ const PrivateRoute = ({ children }) => {
     validate();
   }, []);
 
-   // 🔄 While checking
-  if (valid === null) return null; // or loader
-
-  if (!valid) {
+  if (valid == false) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
