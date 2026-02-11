@@ -1,0 +1,9 @@
+# Redirect root to base path
+/        /msr-workbench/      301
+
+# Allow real files (JS, CSS, images) to load
+/msr-workbench/assets/*   /assets/:splat   200
+/msr-workbench/favicon.ico  /favicon.ico  200
+
+# React router fallback (only for pages)
+/msr-workbench/*   /index.html   200
