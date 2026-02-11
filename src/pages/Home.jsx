@@ -120,7 +120,7 @@ const Home = () => {
                         <path d="M19 0h-14C2.24 0 0 2.24 0 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zM7.12 20.45H3.56V9h3.56v11.45zM5.34 7.59c-1.14 0-2.06-.92-2.06-2.06s.92-2.06 2.06-2.06 2.06.92 2.06 2.06-.92 2.06-2.06 2.06zM20.45 20.45h-3.55v-5.6c0-1.34-.03-3.07-1.87-3.07-1.87 0-2.16 1.46-2.16 2.97v5.7H9.32V9h3.41v1.56h.05c.48-.9 1.65-1.87 3.39-1.87 3.62 0 4.29 2.38 4.29 5.48v6.28z"/>
                     </svg>
               </a>
-              <a href="https://github.com/SanketMashalkar" target="_blank" rel="noreferrer" className="owner-link-icon" title="GitHub">
+              <a href="https://github.com/sanket6250" target="_blank" rel="noreferrer" className="owner-link-icon" title="GitHub">
                     <svg
                     height="24"
                     width="24"
