@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter , HashRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import 'bootstrap/dist/css/bootstrap.css'
@@ -10,9 +10,9 @@ import { AppContextProvider } from './context/AppConetxt.jsx'
 
 createRoot(document.getElementById('root')).render(
 
-  <HashRouter basename="/MSR-WorkBench-UI">
+  <BrowserRouter basename="/MSR-WorkBench-UI">
       <AppContextProvider>
         <App/>
       </AppContextProvider>
-  </HashRouter>
+  </BrowserRouter>
 )
