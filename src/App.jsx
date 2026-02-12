@@ -18,7 +18,7 @@ import RouteLoader from "./components/RouteLoader";
 import { useContext } from 'react';
 import { AppContext } from './context/AppConetxt';
 import DocBuilder from './components/workbench/document/DocBuilder';
-import BillUpload from './components/workbench/document/BillUpload';
+import BillSplitter from './components/workbench/document/BillSplitter';
 
 
 const App = ()=>{
@@ -42,7 +42,7 @@ const App = ()=>{
                 <Route path="home/sqlBuilder" element={<SQLBuilder/>} />
                 <Route path="home/sql/CreateSQLTable" element={<CreateSQLTable/>} />
                 <Route path="home/doc-extract" element={<DocBuilder/>} />
-                <Route path="home/doc-extract/bill-extract" element={<BillUpload/>} />
+                <Route path="home/doc-extract/bill-extract" element={<BillSplitter/>} />
             </Routes>  
             );
   }; 

@@ -7,7 +7,7 @@ const DocBuilder = () => {
   const { userData } = useContext(AppContext);
 
   const tools = [
-    { name: "Bill Extraction", icon: "bi-database", path: "/home/doc-extract/bill-extract" },
+    { name: "Bill Extract/Split", icon: "bi-database", path: "/home/doc-extract/bill-extract" },
   ];
 
   return (
