@@ -11,6 +11,7 @@ import { AppContext } from "../../../../context/AppConetxt";
 export default function CreateSQLTable() {
   const [dbType, setDbType] = useState("postgres");
   const [tableName, setTableName] = useState("");
+  const {setLoading} = useContext(AppContext);
   const [columns, setColumns] = useState([
     {
       name: "",
@@ -70,6 +71,73 @@ const updateColumn = (index, field, value) => {
       },
     ]);
 
+    const validateBeforeGenerate = () => {
+
+      if (!tableName.trim()) {
+        toast.error("Table name is required");
+        return false;
+      }
+
+      const tableError = validateIdentifier(
+        tableName,
+        DB_LIMITS[dbType].table
+      );
+      if (tableError) {
+        toast.error(tableError);
+        return false;
+      }
+
+      if (columns.length === 0) {
+        toast.error("At least one column is required");
+        return false;
+      }
+
+      let pkCount = 0;
+
+      for (let col of columns) {
+
+        if (!col.name.trim()) {
+          toast.error("Column name cannot be empty");
+          return false;
+        }
+
+        const colError = validateIdentifier(
+          col.name,
+          DB_LIMITS[dbType].column
+        );
+        if (colError) {
+          toast.error(colError);
+          return false;
+        }
+
+        if (col.constraints.includes("PRIMARY KEY")) {
+          pkCount++;
+        }
+
+        if (col.constraints.includes("FOREIGN KEY")) {
+          if (!col.refTable || !col.refColumn) {
+            toast.error(
+              `Foreign key in column ${col.name} requires reference table & column`
+            );
+            return false;
+          }
+        }
+      }
+
+      if (pkCount === 0) {
+        toast.error("One PRIMARY KEY is required");
+        return false;
+      }
+
+      if (pkCount > 1) {
+        toast.error("Only one PRIMARY KEY allowed");
+        return false;
+      }
+
+      return true;
+    };
+
+
   const{backendURL} = useContext(AppContext);
 
   const generateSQLScript = async ()=>
@@ -94,9 +162,14 @@ const updateColumn = (index, field, value) => {
       URL.revokeObjectURL(url);
       */
 
-    try{
+    try{    
+          setLoading(true);
+
+          //Will validate client side some necessary validation.
+          if (!validateBeforeGenerate()) return;
+
           //Profile Details API
-          const response =  await axios.post(`${backendURL}/generateSQL` , {dbType ,tableName , columns} ,{  responseType: "blob", withCredentials: true, validateStatus: () => true });
+          const response =  await axios.post(`${backendURL}/generateSQL` , {dbType ,tableName , columns} ,{  responseType: "blob", withCredentials: true ,   headers: localStorage.getItem("jwt") ? {   Authorization: `Bearer ${localStorage.getItem("jwt")}` } : {} , validateStatus: () => true });
           if(response.status == 200)
           {
              // Create file blob
@@ -122,6 +195,10 @@ const updateColumn = (index, field, value) => {
         catch(error)
         {
             toast.error("Download failed." , error.message);
+        }
+        finally
+        {
+          setLoading(false);
         }
 
   }   

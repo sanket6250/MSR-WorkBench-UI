@@ -12,6 +12,11 @@ import {
   DragOverlay,
   closestCenter,
 } from "@dnd-kit/core";
+import { toast } from "react-toastify";
+import { useContext } from 'react';
+import { AppContext } from "../../../context/AppConetxt";
+import axios from "axios";
+
 
 const BillSplitter = () => {
   const [file, setFile] = useState(null);
@@ -24,6 +29,8 @@ const BillSplitter = () => {
   const [openItemId, setOpenItemId] = useState(null);
   const [groupError, setGroupError] = useState("");
   const [showPreviewZoom, setShowPreviewZoom] = useState(false);
+  const {setLoading} = useContext(AppContext);
+  const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
   const dummyExtractedJSON = {
     headers: [
@@ -40,6 +47,43 @@ const BillSplitter = () => {
     ],
   };
 
+
+  const getAvatarColor = (text) => {
+    const colors = [
+      "#6366f1", "#8b5cf6", "#ec4899",
+      "#f43f5e", "#f59e0b", "#10b981",
+      "#06b6d4"
+    ];
+
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+      hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const Avatar = ({ name, size = 34 }) => {return( 
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: `linear-gradient(135deg, ${getAvatarColor(name)}, #00000022)`,
+        color: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: 600,
+        fontSize: size / 2.4,
+        boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+        border: "2px solid #fff",
+      }}
+    >
+      {name.charAt(0).toUpperCase()}
+    </div>
+  )};
+
   /* ---------------- UPLOAD ---------------- */
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -52,9 +96,36 @@ const BillSplitter = () => {
     },
   });
 
-  const handleExtract = () => {
+  const handleExtract = async () => {
+   
+    //We will set dummy JSON data as our Model Training is in Progreess
     setBillData(dummyExtractedJSON);
     setAvailableItems(dummyExtractedJSON.data);
+    
+    /*
+    if (!file) return;
+
+    toast.success("Processing started!");
+
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+        const res = await axios.post(
+        "http://localhost/doc/bill/upload",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        console.log(res.data);
+        setLoading(false);
+    } catch (err) {
+        console.error(err);
+        toast.error("Upload failed");
+        setLoading(false);
+    }
+    */
+    
   };
 
   const handleClear = () => {
@@ -89,71 +160,153 @@ const BillSplitter = () => {
   };
 
   const handleDragEnd = (event) => {
-    const { active, over } = event;
-    setActiveItem(null);
-    if (!over) return;
+  const { active, over } = event;
+  setActiveItem(null);
+  if (!over) return;
 
-    const item = availableItems.find((i) => i.id === active.id);
-    if (!item) return;
+  const item = availableItems.find((i) => i.id === active.id);
+  if (!item) return;
 
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === over.id ? { ...g, items: [...g.items, item] } : g
-      )
-    );
+  setGroups(prev =>
+    prev.map(g => {
+      if (g.id !== over.id) return g;
 
-    setAvailableItems((prev) => prev.filter((i) => i.id !== item.id));
-  };
+      // PARTITION GROUP
+      if (g.partitions) {
+        const splitAmount = round(item.total / g.partitions.length);
+        const splitQty    = round(item.qty / g.partitions.length);
 
+        const updatedPartitions = g.partitions.map((p, index) => ({
+          ...p,
+          items: [
+            ...p.items,
+            {
+              ...item,
+              qty: splitQty,              // ✅ equal decimal qty
+              total: splitAmount,        // ✅ equal decimal amount
+
+              originalTotal: item.total, // for restore
+              originalQty: item.qty,     // for restore
+              id: `${item.id}_${index}`   // ✅ unique id
+            }
+          ]
+        }));
+
+        return { ...g, partitions: updatedPartitions };
+      }
+
+      // NORMAL GROUP
+      return { ...g, items: [...g.items, item] };
+    })
+  );
+
+  setAvailableItems(prev => prev.filter(i => i.id !== item.id));
+};
+  
   const removeFromGroup = (groupId, item) => {
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId
-          ? { ...g, items: g.items.filter((i) => i.id !== item.id) }
-          : g
-      )
+    setGroups(prev =>
+      prev.map(g => {
+        if (g.id !== groupId) return g;
+
+        // 🔥 PARTITION GROUP
+        if (g.partitions) {
+          const originalItem = {
+            ...item,
+            id: item.id.split("_")[0],
+            qty: item.originalQty,
+            total: item.originalTotal
+          };
+
+          return {
+            ...g,
+            partitions: g.partitions.map(p => ({
+              ...p,
+              items: p.items.filter(i => !i.id.startsWith(originalItem.id))
+            }))
+          };
+        }
+
+        // NORMAL GROUP
+        return {
+          ...g,
+          items: g.items.filter(i => i.id !== item.id)
+        };
+      })
     );
-    setAvailableItems((prev) => [...prev, item]);
+
+    // return back to available list
+    if (item.originalTotal) {
+      setAvailableItems(prev => [
+        ...prev,
+        {
+          ...item,
+          id: item.id.split("_")[0],
+          qty: item.originalQty,
+          total: item.originalTotal
+        }
+      ]);
+    } else {
+      setAvailableItems(prev => [...prev, item]);
+    }
   };
 
   /* ---------------- GROUPS ---------------- */
 
   const createGroup = () => {
-    const trimmedName = newGroupName.trim();
+      const trimmedName = newGroupName.trim();
 
-    if (!trimmedName) {
-      setGroupError("Group name cannot be empty.");
-      return;
-    }
+      if (!trimmedName) {
+        setGroupError("Group name cannot be empty.");
+        return;
+      }
 
-    const isDuplicate = groups.some(
-      (g) => g.name.toLowerCase() === trimmedName.toLowerCase()
-    );
-
-    if (isDuplicate) {
-      setGroupError(
-        "Group with this name already exists. Please choose another name."
+      const isDuplicate = groups.some(
+        g => g.name.toLowerCase() === trimmedName.toLowerCase()
       );
-      return;
-    }
 
-    setGroups((prev) => [
-      ...prev,
-      { id: Date.now().toString(), name: trimmedName, items: [] },
-    ]);
+      if (isDuplicate) {
+        setGroupError("Group already exists.");
+        return;
+      }
 
-    setNewGroupName("");
-    setGroupError("");
-  };
+      // detect comma separated names
+        const parts = trimmedName
+        .split(",")
+        .map(p => p.trim())
+        .filter(Boolean);
+
+      const groupObject = {
+        id: Date.now().toString(),
+        name: trimmedName,
+        partitions: parts.length > 1
+          ? parts.map(p => ({ name: p, items: [] }))
+          : null,
+        items: [] // for normal single group
+      };  
+
+
+      setGroups(prev => [...prev, groupObject]);
+
+      setNewGroupName("");
+      setGroupError("");
+    };
 
   const totalColumn = billData?.headers.find((h) => h.isTotal);
 
-  const calculateTotal = (group) => {
-    if (!totalColumn) return 0;
-    return group.items.reduce(
-      (sum, item) => sum + Number(item[totalColumn.key] || 0),
+  const calculateTotal = group => {
+    if (group.partitions) {
+      return round(group.partitions.reduce(
+        (sum, p) =>
+          sum +
+          p.items.reduce((s, i) => s + i.total, 0),
+        0
+      ));
+    }
+
+    return round(group.items.reduce(
+      (sum, i) => sum + i.total,
       0
-    );
+    ));
   };
 
   /* ---------------- DRAGGABLE ROW ---------------- */
@@ -224,9 +377,175 @@ const BillSplitter = () => {
         }}
       >
         <div>
-          <h4 style={{ marginBottom: 10 }}>{group.name}</h4>
+          {/* <h4 style={{ marginBottom: 10 }}>{group.name}</h4> */}
 
-          {group.items.map((item) => {
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+
+            {/* AVATAR SECTION */}
+            <div style={{ display: "flex" }}>
+              {group.partitions ? (
+                group.partitions.map((p, i) => (
+                  <div key={p.name} style={{ marginLeft: i === 0 ? 0 : -10 }}>
+                    <Avatar name={p.name} />
+                  </div>
+                ))
+              ) : (
+                <Avatar name={group.name} size={42} />
+              )}
+            </div>
+
+            {/* TEXT SECTION */}
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+                <span style={{ fontWeight: 600, fontSize: 16 }}>
+                  {group.name}
+                </span>
+
+                {/* TYPE BADGE */}
+                <span
+                  style={{
+                    fontSize: 11,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: group.partitions ? "#ede9fe" : "#dcfce7",
+                    color: group.partitions ? "#6d28d9" : "#166534",
+                    fontWeight: 600
+                  }}
+                >
+                  {group.partitions ? "SPLIT" : "SINGLE"}
+                </span>
+              </div>
+
+              {/* SUB TEXT */}
+              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                {group.partitions
+                  ?
+                  /*  Depending upon requirement we wii use
+                  `${group.partitions.reduce(
+                      (count, p) => count + p.items.length,
+                      0
+                    )} items`*/
+                     
+                    `${group.partitions[0].items.length}  items`
+                  : `${group.items.length} items`}
+              </div>
+
+            </div>
+          </div>
+
+          {group.partitions ? (
+
+            // 🟣 PARTITION LAYOUT
+            <div style={{ display: "grid", gap: 10 , gridTemplateColumns: "repeat(4, 1fr)",}}>
+              {group.partitions.map(part => (
+                <div
+                  key={part.name}
+                  style={{
+                    background: "#f9fafb",
+                    padding: 10,
+                    borderRadius: 10
+                  }}
+                >
+                  {/* <h5 style={{ marginBottom: 6 }}>{part.name}</h5> */}
+
+                  <Avatar name={part.name} size={40} />
+
+                  {part.items.map(item =>{
+                   const isOpen = openItemId === item.id;
+
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          background: "#f3f4f6",
+                          padding: "8px 10px",
+                          borderRadius: 8,
+                          marginBottom: 8,
+                        }}
+                      >
+                        {/* Top Row */}
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <span style={{ fontWeight: 500 }}>{item.item}</span>
+
+                          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <span>₹{item.total}</span>
+
+                            {/* MENU BUTTON */}
+                            <button
+                              onClick={() =>
+                                setOpenItemId(isOpen ? null : item.id)
+                              }
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: 16,
+                              }}
+                            >
+                              ⋮
+                            </button>
+
+                            {/* REMOVE BUTTON */}
+                            <button
+                              onClick={() => removeFromGroup(group.id, item)}
+                              style={{
+                                background: "#ef4444",
+                                border: "none",
+                                color: "#fff",
+                                borderRadius: "50%",
+                                width: 20,
+                                height: 20,
+                                cursor: "pointer",
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* DETAILS PANEL */}
+                        {isOpen && (
+                          <div
+                            style={{
+                              marginTop: 8,
+                              paddingTop: 8,
+                              borderTop: "1px solid #e5e7eb",
+                              fontSize: 13,
+                              color: "#374151",
+                            }}
+                          >
+                            {billData.headers.map((h) => (
+                              <div
+                                key={h.key}
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  marginBottom: 4,
+                                }}
+                              >
+                                <span>{h.label}</span>
+                                <span>{item[h.key]}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+          ) : 
+
+          group.items.map((item) => {
             const isOpen = openItemId === item.id;
 
             return (
