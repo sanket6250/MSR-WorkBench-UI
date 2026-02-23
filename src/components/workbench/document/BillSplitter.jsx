@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   useReactTable,
@@ -32,6 +32,15 @@ const BillSplitter = () => {
   const {setLoading} = useContext(AppContext);
   const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
+  const [showSplitModal, setShowSplitModal] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [splitMode, setSplitMode] = useState("amount");
+  const [editableRows, setEditableRows] = useState([]);
+
+  const selectedGroup = useMemo(() => {
+    return groups.find(g => g.id === selectedGroupId) || null;
+  }, [groups, selectedGroupId]);
+
   const dummyExtractedJSON = {
     headers: [
       { key: "item", label: "Item" },
@@ -46,6 +55,47 @@ const BillSplitter = () => {
       { id: "4", item: "Pasta", qty: 1, price: 250, total: 250 },
     ],
   };
+
+   const thStyle = {
+        padding: 12,
+        textAlign: "left",
+        fontSize: 13,
+        borderBottom: "1px solid #e5e7eb",
+      };
+
+      const tdStyle = {
+        padding: 12,
+        fontSize: 14,
+        borderBottom: "1px solid #f1f5f9",
+      };
+
+      const inputStyle = {
+        width: "100%",
+        padding: "6px 8px",
+        borderRadius: 6,
+        border: "1px solid #e5e7eb",
+        fontSize: 13
+      };
+
+      const cancelBtn = {
+        padding: "8px 16px",
+        background: "#e5e7eb",
+        border: "none",
+        borderRadius: 8,
+        cursor: "pointer",
+      };
+
+      const saveBtn = {
+          padding: "10px 20px",
+          background: "linear-gradient(135deg,#6366f1,#4f46e5)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 10,
+          fontWeight: 600,
+          cursor: "pointer",
+          boxShadow: "0 6px 16px rgba(99,102,241,0.4)",
+          transition: "0.2s"
+      };
 
 
   const getAvatarColor = (text) => {
@@ -159,49 +209,71 @@ const BillSplitter = () => {
     setActiveItem(item);
   };
 
-  const handleDragEnd = (event) => {
-  const { active, over } = event;
-  setActiveItem(null);
-  if (!over) return;
+ const handleDragEnd = (event) => {
+    const { active, over } = event;
+    setActiveItem(null);
+    if (!over) return;
 
-  const item = availableItems.find((i) => i.id === active.id);
-  if (!item) return;
+    const item = availableItems.find((i) => i.id === active.id);
+    if (!item) return;
 
-  setGroups(prev =>
-    prev.map(g => {
-      if (g.id !== over.id) return g;
+    setGroups(prev =>
+      prev.map(g => {
+        if (g.id !== over.id) return g;
 
-      // PARTITION GROUP
-      if (g.partitions) {
-        const splitAmount = round(item.total / g.partitions.length);
-        const splitQty    = round(item.qty / g.partitions.length);
+        // 🟣 PARTITION GROUP
+        if (g.partitions) {
 
-        const updatedPartitions = g.partitions.map((p, index) => ({
-          ...p,
-          items: [
-            ...p.items,
-            {
-              ...item,
-              qty: splitQty,              // ✅ equal decimal qty
-              total: splitAmount,        // ✅ equal decimal amount
+          const memberCount = g.partitions.length;
 
-              originalTotal: item.total, // for restore
-              originalQty: item.qty,     // for restore
-              id: `${item.id}_${index}`   // ✅ unique id
-            }
-          ]
-        }));
+          const baseAmount = round(item.total / memberCount);
+          const baseQty = round(item.qty / memberCount);
 
-        return { ...g, partitions: updatedPartitions };
-      }
+          let remainingAmount = item.total;
+          let remainingQty = item.qty;
 
-      // NORMAL GROUP
-      return { ...g, items: [...g.items, item] };
-    })
-  );
+          const updatedPartitions = g.partitions.map((p, index) => {
 
-  setAvailableItems(prev => prev.filter(i => i.id !== item.id));
-};
+            // Last member gets remainder
+            const amount =
+              index === memberCount - 1
+                ? round(remainingAmount)
+                : baseAmount;
+
+            const qty =
+              index === memberCount - 1
+                ? round(remainingQty)
+                : baseQty;
+
+            remainingAmount = round(remainingAmount - amount);
+            remainingQty = round(remainingQty - qty);
+
+            return {
+              ...p,
+              items: [
+                ...p.items,
+                {
+                  ...item,
+                  qty: qty,
+                  total: amount,
+                  originalTotal: item.total,
+                  originalQty: item.qty,
+                  id: `${item.id}_${index}`
+                }
+              ]
+            };
+          });
+
+          return { ...g, partitions: updatedPartitions };
+        }
+
+        // 🟢 NORMAL GROUP
+        return { ...g, items: [...g.items, item] };
+      })
+    );
+
+    setAvailableItems(prev => prev.filter(i => i.id !== item.id));
+  };
   
   const removeFromGroup = (groupId, item) => {
     setGroups(prev =>
@@ -432,6 +504,19 @@ const BillSplitter = () => {
               </div>
 
             </div>
+
+                  <button
+                   onClick={() => openSplitModal(group.id)}
+                    style={{
+                      background: "#f3f4f6",
+                      border: "none",
+                      borderRadius: 8,
+                      padding: "6px 8px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ⚙
+                  </button>
           </div>
 
           {group.partitions ? (
@@ -542,7 +627,6 @@ const BillSplitter = () => {
                 </div>
               ))}
             </div>
-
           ) : 
 
           group.items.map((item) => {
@@ -650,9 +734,222 @@ const BillSplitter = () => {
     );
   };
 
+const openSplitModal = (groupId) => {
+  setSplitMode("amount");
+  setSelectedGroupId(groupId);
+  setShowSplitModal(true);
+};
+
+    const editableTotal = useMemo(
+      () => editableRows.reduce((sum, r) => sum + r.amount, 0),
+      [editableRows]
+    );
+
+const handleAmountChange = (id, value) => {
+  if (splitMode !== "amount") return;
+
+  const val = parseFloat(value) || 0;
+
+  setEditableRows(prev => {
+    const currentRow = prev.find(r => r.id === id);
+    if (!currentRow) return prev;
+
+    const itemKey = id.split("_")[0];
+
+    const relatedRows = prev.filter(r =>
+      r.id.startsWith(itemKey)
+    );
+
+    const totalAllocated = relatedRows.reduce((sum, r) => {
+      if (r.id === id) return sum + val;
+      return sum + r.amount;
+    }, 0);
+
+    if (round(totalAllocated) > round(currentRow.originalTotal)) {
+      toast.error("Allocated amount exceeds item total!");
+      return prev;
+    }
+
+    return prev.map(row => {
+      if (row.id !== id) return row;
+
+      const amount = round(val);
+      const percent = round(
+        (amount / row.originalTotal) * 100
+      );
+      const qty = round(amount / row.price);
+
+      return { ...row, amount, percent, qty };
+    });
+  });
+};
+
+const handlePercentChange = (id, value) => {
+  if (splitMode !== "percent") return;
+
+  const val = parseFloat(value) || 0;
+
+  setEditableRows(prev => {
+    const currentRow = prev.find(r => r.id === id);
+    if (!currentRow) return prev;
+
+    const amountFromPercent = round(
+      (val / 100) * currentRow.originalTotal
+    );
+
+    const itemKey = id.split("_")[0];
+
+    const relatedRows = prev.filter(r =>
+      r.id.startsWith(itemKey)
+    );
+
+    const totalAllocated = relatedRows.reduce((sum, r) => {
+      if (r.id === id) return sum + amountFromPercent;
+      return sum + r.amount;
+    }, 0);
+
+    if (round(totalAllocated) > round(currentRow.originalTotal)) {
+      toast.error("Allocated percentage exceeds item total!");
+      return prev;
+    }
+
+    return prev.map(row => {
+      if (row.id !== id) return row;
+
+      const qty = round(amountFromPercent / row.price);
+
+      return {
+        ...row,
+        percent: val,
+        amount: amountFromPercent,
+        qty
+      };
+    });
+  });
+};
+
+const validateItemAllocation = (rows, itemKey, newAmount, editingRowId) => {
+  const relatedRows = rows.filter(r => r.id.startsWith(itemKey));
+
+  const totalAllocated = relatedRows.reduce((sum, r) => {
+    if (r.id === editingRowId) return sum + newAmount;
+    return sum + r.amount;
+  }, 0);
+
+  return round(totalAllocated) <= round(relatedRows[0].originalTotal);
+};
+
+  const saveSplitChanges = () => {
+  if (!selectedGroup) return;
+
+  setGroups((prev) =>
+    prev.map((g) => {
+      if (g.id !== selectedGroup.id) return g;
+
+      if (g.partitions) {
+        const updatedPartitions = g.partitions.map((p) => {
+          const updatedItems = p.items.map((item) => {
+            const row = editableRows.find((r) => r.id === item.id);
+            if (!row) return item;
+
+            return {
+              ...item,
+              total: round(row.amount),
+              qty: round(row.amount / row.price) // ✅ FIX
+            };
+          });
+
+          return { ...p, items: updatedItems };
+        });
+
+        return { ...g, partitions: updatedPartitions };
+      } else {
+        const updatedItems = g.items.map((item) => {
+          const row = editableRows.find((r) => r.id === item.id);
+          if (!row) return item;
+
+          return {
+            ...item,
+            total: round(row.amount),
+            qty: round(row.amount / row.price) // ✅ FIX
+          };
+        });
+
+        return { ...g, items: updatedItems };
+      }
+    })
+  );
+
+  setShowSplitModal(false);
+  setSelectedGroupId(null);
+};
+  
+const groupedByItem = useMemo(() => {
+  const map = {};
+
+    editableRows.forEach(row => {
+      const itemKey = row.id.split("_")[0];
+
+      if (!map[itemKey]) {
+        map[itemKey] = {
+          itemKey,
+          name: row.item,
+          price: row.price,
+          originalTotal: row.originalTotal,
+          rows: []
+        };
+      }
+
+      map[itemKey].rows.push(row);
+    });
+
+    return Object.values(map);
+  }, [editableRows]);
+
+
+  useEffect(() => {
+  if (!showSplitModal || !selectedGroup) return;
+
+  const rows = [];
+
+  if (selectedGroup.partitions) {
+    selectedGroup.partitions.forEach((p) => {
+      p.items.forEach((item) => {
+        rows.push({
+          id: item.id,
+          item: item.item,
+          member: p.name,
+          price: item.price,
+          qty: item.qty,
+          amount: item.total,
+          originalTotal: item.originalTotal || item.total,
+          originalQty: item.originalQty || item.qty,
+          percent: round(
+            (item.total / (item.originalTotal || item.total)) * 100
+          ),
+        });
+      });
+    });
+  }
+
+  setEditableRows(rows);
+
+}, [showSplitModal, selectedGroup]);
+    
+
   /* ---------------- UI ---------------- */
 
   return (
+    <>
+    <style>
+      {
+        `@keyframes fadeInScale {
+          from { transform: translate(-50%, -48%) scale(0.96); opacity: 0; }
+          to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }`
+      }
+    </style>
+
     <div style={{ padding: 40, background: "#f4f6f9", minHeight: "100vh" }}>
       {/* Upload Section */}
       <div
@@ -964,7 +1261,297 @@ const BillSplitter = () => {
           </DragOverlay>
         </DndContext>
       )}
+
+      {showSplitModal && selectedGroup && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setShowSplitModal(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.4)",
+              backdropFilter: "blur(3px)",
+              zIndex: 999,
+            }}
+          />
+
+          {/* Modal */}
+          <div
+           style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 900,
+            maxHeight: "90vh",
+            background: "#ffffff",
+            borderRadius: 20,
+            boxShadow: "0 30px 80px rgba(0,0,0,0.25)",
+            padding: 28,
+            zIndex: 1000,
+            overflowY: "auto",
+            animation: "fadeInScale 0.2s ease"
+          }}
+          >
+            {/* Header */}
+           <div style={{
+              marginBottom: 24,
+              paddingBottom: 16,
+              borderBottom: "1px solid #f1f5f9"
+            }}>
+              <h2 style={{
+                margin: 0,
+                fontSize: 20,
+                fontWeight: 700,
+                color: "#111827"
+              }}>
+                Split Configuration
+              </h2>
+
+              <div style={{
+                fontSize: 13,
+                color: "#6b7280",
+                marginTop: 6
+              }}>
+                Adjust allocation for <strong>{selectedGroup.name}</strong>
+              </div>
+            </div>
+
+            {/* Split Mode Tabs */}
+            <div
+              style={{
+                display: "flex",
+                background: "#f3f4f6",
+                padding: 6,
+                borderRadius: 12,
+                marginBottom: 24,
+                width: "fit-content"
+              }}
+            >
+              {["amount", "percent"].map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setSplitMode(mode)}
+                  style={{
+                    padding: "8px 18px",
+                    borderRadius: 8,
+                    border: "none",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    background:
+                      splitMode === mode ? "#6366f1" : "transparent",
+                    color:
+                      splitMode === mode ? "#fff" : "#6b7280",
+                    transition: "0.2s"
+                  }}
+                >
+                  {mode === "amount" ? "Split by Amount" : "Split by Percent"}
+                </button>
+              ))}
+            </div>
+
+            {/* Table */}
+             <div style={{ maxHeight: 450, overflowY: "auto", paddingRight: 6 }}>
+                {groupedByItem.map((itemBlock, index) => {
+                  const allocated = itemBlock.rows.reduce(
+                    (sum, r) => sum + r.amount,
+                    0
+                  );
+
+                  const isValid =
+                    round(allocated) === round(itemBlock.originalTotal);
+
+                  return (
+                    <div
+                      key={itemBlock.itemKey}
+                      style={{
+                        marginBottom: 24,
+                        borderRadius: 14,
+                        border: "1px solid #e5e7eb",
+                        background: "#ffffff",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                        overflow: "hidden"
+                      }}
+                    >
+                      {/* ---------- ITEM HEADER ---------- */}
+                      <div
+                        style={{
+                          padding: "14px 18px",
+                          background: "linear-gradient(135deg,#f9fafb,#ffffff)",
+                          borderBottom: "1px solid #e5e7eb",
+                          display: "flex",
+                          color: isValid ? "#16a34a" : "#dc2626",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          background: isValid ? "#dcfce7" : "#fee2e2",
+                          padding: "4px 8px",
+                          borderRadius: 6,
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 15 }}>
+                            {itemBlock.name}
+                          </div>
+                          <div style={{ fontSize: 12, color: "#6b7280" }}>
+                            Qty: {itemBlock.originalQty} × Price (₹{itemBlock.price})
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: "right" }}>
+                          <div
+                            style={{
+                              background: "#ede9fe",
+                              color: "#6d28d9",
+                              padding: "6px 12px",
+                              borderRadius: 999,
+                              fontWeight: 600,
+                              fontSize: 13,
+                              marginBottom: 6
+                            }}
+                          >
+                            ₹ {itemBlock.originalTotal}
+                          </div>
+
+                          <div
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 500,
+                              color: isValid ? "#16a34a" : "#dc2626"
+                            }}
+                          >
+                            Allocated: ₹{round(allocated)} / ₹
+                            {itemBlock.originalTotal}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ---------- MEMBER TABLE ---------- */}
+                      <table
+                        style={{
+                          width: "100%",
+                          borderCollapse: "collapse"
+                        }}
+                      >
+                        <thead>
+                          <tr
+                            style={{
+                              background: "#f9fafb",
+                              fontSize: 12,
+                              textAlign: "left"
+                            }}
+                          >
+                            <th style={{ padding: 10 }}>Member</th>
+                            <th style={{ padding: 10 }}>Amount (₹)</th>
+                            <th style={{ padding: 10 }}>Percent (%)</th>
+                            <th style={{ padding: 10 }}>Qty</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {itemBlock.rows.map(row => (
+                            <tr key={row.id} style={{ borderTop: "1px solid #f1f5f9" }}>
+                              <td style={{ padding: 10, fontWeight: 500 }}>
+                                {row.member}
+                              </td>
+
+                              {/* AMOUNT */}
+                              <td style={{ padding: 10 }}>
+                               <input
+                                  type="number"
+                                  disabled={splitMode !== "amount"}
+                                  value={row.amount}
+                                  onChange={e =>
+                                    handleAmountChange(row.id, e.target.value)
+                                  }
+                                  style={{
+                                    ...inputStyle,
+                                    background:
+                                      splitMode !== "amount" ? "#f3f4f6" : "#fff"
+                                  }}
+                                />
+                              </td>
+
+                              {/* PERCENT */}
+                              <td style={{ padding: 10 }}>
+                                  <input
+                                    type="number"
+                                    disabled={splitMode !== "percent"}
+                                    value={row.percent}
+                                    onChange={e =>
+                                      handlePercentChange(row.id, e.target.value)
+                                    }
+                                    style={{
+                                      ...inputStyle,
+                                      background:
+                                        splitMode !== "percent" ? "#f3f4f6" : "#fff"
+                                    }}
+                                  />
+                              </td>
+
+                              {/* QTY (readonly auto) */}
+                              <td style={{ padding: 10 }}>
+                                {row.qty}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })}
+              </div>
+
+            {/* Footer */}
+            <div
+              style={{
+                marginTop: 20,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                Total: ₹{selectedGroup.partitions
+                  ? selectedGroup.partitions.reduce(
+                      (sum, p) => sum + p.items.reduce((s, i) => s + i.total, 0),
+                      0
+                    )
+                  : selectedGroup.items.reduce((sum, i) => sum + i.total, 0)}
+                {" | "}Allocated: ₹{round(editableRows.reduce((sum, r) => sum + r.amount, 0))}
+              </div>
+
+              <div style={{ display: "flex", gap: 12 }}>
+                <button
+                  onClick={() => setShowSplitModal(false)}
+                  style={cancelBtn}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  style={saveBtn}
+                  disabled={
+                    round(editableRows.reduce((sum, r) => sum + r.amount, 0)) !==
+                    (selectedGroup.partitions
+                      ? selectedGroup.partitions.reduce(
+                          (sum, p) => sum + p.items.reduce((s, i) => s + i.total, 0),
+                          0
+                        )
+                      : selectedGroup.items.reduce((sum, i) => sum + i.total, 0))
+                  }
+                  onClick={saveSplitChanges}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
     </div>
+    </>
   );
 };
 
