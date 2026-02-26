@@ -32,7 +32,7 @@ const Login = () =>
                const response = await axios.post(`${backendURL}/register` , {name , email , password});
                if(response.status == 200)
                {
-                  navigate("/");
+                  navigate("/home");
                   toast.success("Account created successfully.");
                }
                else

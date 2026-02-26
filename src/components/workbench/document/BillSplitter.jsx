@@ -36,6 +36,7 @@ const BillSplitter = () => {
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [splitMode, setSplitMode] = useState("amount");
   const [editableRows, setEditableRows] = useState([]);
+  const [showSummary, setShowSummary] = useState(false); // default closed
 
   const selectedGroup = useMemo(() => {
     return groups.find(g => g.id === selectedGroupId) || null;
@@ -431,6 +432,12 @@ const BillSplitter = () => {
   const DroppableGroup = ({ group }) => {
     const { setNodeRef, isOver } = useDroppable({ id: group.id });
 
+    const getMemberTotal = (part) => {
+      return round(
+        part.items.reduce((sum, item) => sum + item.total, 0)
+      );
+    };
+
     return (
       <div
         ref={setNodeRef}
@@ -470,7 +477,7 @@ const BillSplitter = () => {
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 
-                <span style={{ fontWeight: 600, fontSize: 16 }}>
+                <span style={{ fontSize: 16 , fontWeight: 600 , color: "#111827" }}>
                   {group.name}
                 </span>
 
@@ -490,7 +497,7 @@ const BillSplitter = () => {
               </div>
 
               {/* SUB TEXT */}
-              <div style={{ fontSize: 12, color: "#6b7280" }}>
+              <div style={{ fontSize: 13 , color: "#6b7280" }}>
                 {group.partitions
                   ?
                   /*  Depending upon requirement we wii use
@@ -505,8 +512,10 @@ const BillSplitter = () => {
 
             </div>
 
+              {group.partitions ? (
                   <button
                    onClick={() => openSplitModal(group.id)}
+                   title="Split By Amount/Percent"
                     style={{
                       background: "#f3f4f6",
                       border: "none",
@@ -517,24 +526,129 @@ const BillSplitter = () => {
                   >
                     ⚙
                   </button>
+              ) : (<></>)}
+              
+              {/* REMOVE GROUP BUTTON */}
+            {/* Modern Remove Button */}
+            <button
+              onClick={() => handleRemoveSplitGroup(group)}
+              title="Remove Split Group"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                background: "#f9fafb",
+                border: "1px solid #e5e7eb",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                transition: "0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(220,38,38,0.15)";
+                e.currentTarget.style.transform = "scale(1.08)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(220,38,38,0.08)";
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+            >
+              🗑️
+            </button>
+
           </div>
 
           {group.partitions ? (
 
             // 🟣 PARTITION LAYOUT
-            <div style={{ display: "grid", gap: 10 , gridTemplateColumns: "repeat(4, 1fr)",}}>
+            <div
+              style={{
+                display: "flex",
+                gap: 16,
+                overflowX: "auto",
+                paddingBottom: 6,
+                scrollbarWidth: "thin",
+                alignItems: "flex-start"
+              }}
+            >
               {group.partitions.map(part => (
-                <div
+               <div
                   key={part.name}
                   style={{
                     background: "#f9fafb",
-                    padding: 10,
-                    borderRadius: 10
+                    padding: 14,
+                    borderRadius: 14,
+                    minWidth: 260,
+                    maxWidth: 320,
+                    flexShrink: 0,
+                    border: "1px solid #e5e7eb",
+                    boxShadow: "0 4px 10px rgba(0,0,0,0.04)",
+                    transition: "0.2s"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-3px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 10px 20px rgba(0,0,0,0.08)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow =
+                      "0 4px 10px rgba(0,0,0,0.04)";
                   }}
                 >
                   {/* <h5 style={{ marginBottom: 6 }}>{part.name}</h5> */}
 
-                  <Avatar name={part.name} size={40} />
+                  {/* Group Hedare Avatar */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 12
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <Avatar name={part.name} size={40} />
+
+                      <div>
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            fontSize: 14,
+                            color: "#111827"
+                          }}
+                        >
+                          {part.name}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "#6b7280"
+                          }}
+                        >
+                          {part.items.length} items
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 🔥 Dynamic Member Total */}
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 15,
+                        color: "#111827",
+                        background: "#eef2ff",
+                        padding: "6px 12px",
+                        borderRadius: 999,
+                        minWidth: 70,
+                        textAlign: "center"
+                      }}
+                    >
+                      ₹ {getMemberTotal(part)}
+                    </div>
+                  </div>
 
                   {part.items.map(item =>{
                    const isOpen = openItemId === item.id;
@@ -935,6 +1049,103 @@ const groupedByItem = useMemo(() => {
   setEditableRows(rows);
 
 }, [showSplitModal, selectedGroup]);
+
+const memberSummary = useMemo(() => {
+    const summary = {};
+
+    groups.forEach(group => {
+
+      // 🔵 SPLIT GROUP
+      if (group.partitions) {
+        group.partitions.forEach(part => {
+          const total = part.items.reduce((sum, item) => sum + item.total, 0);
+
+          if (!summary[part.name]) {
+            summary[part.name] = 0;
+          }
+
+          summary[part.name] += total;
+        });
+      }
+
+      // 🟢 SINGLE GROUP
+      else {
+        const total = group.items.reduce((sum, item) => sum + item.total, 0);
+
+        if (!summary[group.name]) {
+          summary[group.name] = 0;
+        }
+
+        summary[group.name] += total;
+      }
+    });
+
+    return Object.entries(summary).map(([name, total]) => ({
+      name,
+      total: round(total)
+    }));
+
+  }, [groups]);
+
+ const handleRemoveSplitGroup = (group) => {
+  if (!group) return;
+
+  const restoredItemsMap = {};
+
+  // 🟣 SPLIT GROUP
+  if (group.partitions) {
+    group.partitions.forEach(part => {
+      part.items.forEach(item => {
+
+        const originalId = item.id.includes("_")
+          ? item.id.split("_")[0]
+          : item.id;
+
+        if (!restoredItemsMap[originalId]) {
+          restoredItemsMap[originalId] = {
+            id: originalId,
+            item: item.item, // ✅ correct field
+            price: item.price,
+            qty: item.originalQty ?? item.qty,
+            total: item.originalTotal ?? item.total,
+          };
+        }
+      });
+    });
+  }
+
+  // 🟢 SINGLE GROUP
+  else {
+    group.items.forEach(item => {
+
+      const originalId = item.id.includes("_")
+        ? item.id.split("_")[0]
+        : item.id;
+
+      if (!restoredItemsMap[originalId]) {
+        restoredItemsMap[originalId] = {
+          id: originalId,
+          item: item.item, // ✅ correct field
+          price: item.price,
+          qty: item.qty,
+          total: item.total,
+        };
+      }
+    });
+  }
+
+  const restoredItems = Object.values(restoredItemsMap);
+
+  // Remove group
+  setGroups(prev => prev.filter(g => g.id !== group.id));
+
+  // Restore to table
+  setAvailableItems(prev => [...prev, ...restoredItems]);
+
+  // Close modal properly
+  setShowSplitModal(false);
+  setSelectedGroupId(null);
+};
     
 
   /* ---------------- UI ---------------- */
@@ -946,11 +1157,16 @@ const groupedByItem = useMemo(() => {
         `@keyframes fadeInScale {
           from { transform: translate(-50%, -48%) scale(0.96); opacity: 0; }
           to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }`
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        `
       }
     </style>
 
-    <div style={{ padding: 40, background: "#f4f6f9", minHeight: "100vh" }}>
+    <div style={{ padding: 40, background: "linear-gradient(180deg,#f8fafc 0%, #eef2f7 100%)", minHeight: "100vh" }}>
       {/* Upload Section */}
       <div
         style={{
@@ -1221,12 +1437,155 @@ const groupedByItem = useMemo(() => {
               )}
             </div>
 
+            {groups.length > 0 && (
+              <div
+              style={{
+                background: "#ffffff",
+                borderRadius: 20,
+                padding: 20,
+                boxShadow:
+                  "0 1px 2px rgba(0,0,0,0.04), 0 12px 30px rgba(0,0,0,0.06)",
+                border: "1px solid #eef2f7",
+                marginBottom: 32,
+               
+              }}
+             >
+              {/* Header */}
+              <div
+                onClick={() => setShowSummary(prev => !prev)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                }} 
+              >
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "#111827" }}>
+                    Bill Summary
+                  </div>
+                  <div style={{ fontSize: 13, color: "#6b7280" }}>
+                    Group member wise total amount breakdown.
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "#f9fafb",
+                    border: "1px solid #e5e7eb",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#111827"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                      transform: showSummary ? "rotate(180deg)" : "rotate(0deg)",
+                      transition: "transform 0.25s ease",
+                    }}
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Body */}
+              {showSummary && (
+                <div style={{ marginTop: 24 , display: "flex", flexWrap: 'wrap'}}>
+                  {memberSummary.map((user) => (
+                    <div
+                      key={user.name}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 14,
+                        padding: "10px 16px",
+                        borderRadius: 14,
+                        background: "#f8fafc",
+                        border: "1px solid #e5e7eb",
+                        minWidth: 150,
+                        maxWidth:200,
+                        margin: '0px 5px',
+                        flex: "1 1 auto",
+                        transition: "all 0.2s ease",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                        e.currentTarget.style.boxShadow =
+                          "0 6px 16px rgba(0,0,0,0.08)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow =
+                          "0 2px 6px rgba(0,0,0,0.04)";
+                      }}
+                    >
+                      {/* LEFT: Avatar + Name */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <Avatar name={user.name} size={34} />
+
+                        <div style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>
+                          {user.name}
+                        </div>
+                      </div>
+
+                      {/* RIGHT: Amount */}
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 15,
+                          color: "#16a34a",
+                          letterSpacing: 0.3,
+                        }}
+                      >
+                        ₹ {user.total}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            )}
+
+          {/* Default No Group Content*/}
+          {groups.length == 0 && ( 
+            <div style={{
+            textAlign: "center",
+            padding: 40,
+            color: "#6b7280"
+          }}>
+            <div style={{ fontSize: 18, marginBottom: 8 }}>
+              No split groups yet
+            </div>
+            <div style={{ fontSize: 14 }}>
+              Drag items here to create your first split group
+            </div>
+          </div>
+          )}
+
+
           {/* Groups */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
+              gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+              scrollbarWidth: "thin",
               gap: 20,
+              width: "100%",
             }}
           >
             {groups.map((group) => (
@@ -1377,8 +1736,6 @@ const groupedByItem = useMemo(() => {
                       {/* ---------- ITEM HEADER ---------- */}
                       <div
                         style={{
-                          padding: "14px 18px",
-                          background: "linear-gradient(135deg,#f9fafb,#ffffff)",
                           borderBottom: "1px solid #e5e7eb",
                           display: "flex",
                           color: isValid ? "#16a34a" : "#dc2626",
