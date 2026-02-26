@@ -18,7 +18,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       localStorage.removeItem("jwt"); // clear invalid token
-      window.location.href = "/msr-workbench/login"; // force login
+      window.location.href = "/MSR-WorkBench-UI/"; // force login
     }
     return Promise.reject(error);
   }
